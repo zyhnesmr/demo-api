@@ -16,6 +16,7 @@ spec:
       labels:
         app: demo-api-deploy
     spec:
+      serviceAccountName: ohmyfans-discovery
       containers:
       - name: demo-api-deploy
         image: gw.ohmyfans-inc.com:8000/demo/demo-api:1.0
