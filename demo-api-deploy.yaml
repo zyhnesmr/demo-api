@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-deploy
+  namespace: ohmyfans
+  labels:
+    app: demo-api-deploy
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: demo-api-deploy
+  template:
+    metadata:
+      labels:
+        app: demo-api-deploy
+    spec:
+      containers:
+      - name: demo-api-deploy
+        image: gw.ohmyfans-inc.com:8000/demo/demo-api:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8888
+        readinessProbe:
+          tcpSocket:
+            port: 8888
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8888
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+      volumes:
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-deploy-svc
+  namespace: ohmyfans
+spec:
+  type: NodePort
+  ports:
+  - port: 8888
+    targetPort: 8888
+    nodePort: 32009
+  selector:
+    app: demo-api-deploy
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: demo-api-deploy-hpa-c
+  namespace: ohmyfans
+  labels:
+    app: demo-api-deploy-hpa-c
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-api-deploy
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: demo-api-deploy-hpa-m
+  namespace: ohmyfans
+  labels:
+    app: demo-api-deploy-hpa-m
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: demo-api-deploy
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

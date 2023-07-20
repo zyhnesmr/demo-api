@@ -1,0 +1,21 @@
+syntax = "v1"
+
+info(
+	title: "type title here"
+	desc: "type desc here"
+	author: "type author here"
+	email: "type email here"
+	version: "type version here"
+)
+
+type (
+	Response {
+		Message string `json:"message"`
+	}
+)
+
+service demo-api{
+	@doc "demo"
+	@handler SayHello
+	get /sayhello returns(Response)
+}

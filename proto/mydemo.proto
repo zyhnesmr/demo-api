@@ -1,0 +1,15 @@
+syntax = "proto3";
+option go_package = "demo-api/internal/rpc/demo";
+package mydemo;
+
+service Demo{
+  rpc SayHello(InMsg)returns(OutMsg);
+}
+
+message InMsg{
+  string msg = 1;
+}
+
+message OutMsg{
+  string msg = 1;
+}
